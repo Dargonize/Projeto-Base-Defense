@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-Wall",
+                "-I", "D:/PROGRAMACAO/allegro/include",  // Caminho para os cabeçalhos do Allegro
+                "main.cpp",  // Seu arquivo principal
+                "player.cpp",  // Adicionando o arquivo player.cpp
+                "enemy.cpp",  // Adicionando o arquivo enemy.cpp
+                "-L", "D:/PROGRAMACAO/allegro/lib",  // Caminho das bibliotecas do Allegro
+                "-lallegro",  // Nome da biblioteca Allegro
+                "-lallegro_primitives",  // Se usar o addon de primitivas
+                "-o", "game.exe"  // Nome do executável
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Compiling Allegro game"
+        }
+    ]
+}
