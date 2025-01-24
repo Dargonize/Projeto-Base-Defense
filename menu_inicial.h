@@ -4,9 +4,9 @@
 #include <allegro5/allegro_font.h>
 
 enum Dificuldade {
-    FACIL = 60,    // 1 minuto
-    MEDIO = 180,   // 3 minutos
-    DIFICIL = 300  // 5 minutos
+    FACIL = 60,    
+    MEDIO = 180,   
+    DIFICIL = 300  
 };
 
 class MenuInicial {
