@@ -80,7 +80,7 @@ int main()
         return -1;
     }
 
-    fonte = al_load_font("arial.ttf", 24, 0);  // Voltei para 24
+    fonte = al_load_font("arial.ttf", 24, 0); 
     if (!fonte)
     {
         std::cerr << "Falha ao carregar a fonte!" << std::endl;
