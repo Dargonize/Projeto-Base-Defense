@@ -25,7 +25,7 @@ void Inimigo::mover(float x_alvo, float y_alvo) {
 void Inimigo::atirar(float x_alvo, float y_alvo, ListaEncadeada<Projetil>& projeteis) {
     if (tempo_recarga > 0) return;
     
-    projeteis.inserir_inicio(Projetil(x, y, x_alvo, y_alvo, false)); // Specify not a player projectile
+    projeteis.inserir_inicio(Projetil(x, y, x_alvo, y_alvo, false)); 
     tempo_recarga = recarga_tiro;
 }
 
