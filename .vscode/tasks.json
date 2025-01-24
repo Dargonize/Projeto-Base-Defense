@@ -6,16 +6,26 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-g",
-                "-Wall",
+                "-g",                          // Ativar depuração
+                "-Wall",                        // Ativar todos os warnings
                 "-I", "D:/PROGRAMACAO/allegro/include",  // Caminho para os cabeçalhos do Allegro
-                "main.cpp",  // Seu arquivo principal
-                "player.cpp",  // Adicionando o arquivo player.cpp
-                "enemy.cpp",  // Adicionando o arquivo enemy.cpp
-                "-L", "D:/PROGRAMACAO/allegro/lib",  // Caminho das bibliotecas do Allegro
-                "-lallegro",  // Nome da biblioteca Allegro
-                "-lallegro_primitives",  // Se usar o addon de primitivas
-                "-o", "game.exe"  // Nome do executável
+                "main.cpp",                     // Arquivo principal
+                "base.cpp",                     // Adicionando o arquivo base.cpp
+                "caixa_municao.cpp",            // Adicionando o arquivo caixa_municao.cpp
+                "estado_jogo.cpp",              // Adicionando o arquivo estado_jogo.cpp
+                "inimigo.cpp",                  // Adicionando o arquivo inimigo.cpp
+                "jogador.cpp",                  // Adicionando o arquivo jogador.cpp
+                "projetil.cpp", 
+                "pacote_vida.cpp",      
+                "menu_inicial.cpp", 
+                "menu_gameover.cpp",
+                "gerenciador_som.cpp",           // Adicionando o arquivo projetil.cpp
+                "-L", "D:/PROGRAMACAO/allegro/lib",     // Caminho das bibliotecas do Allegro
+                "-lallegro",                    // Nome da biblioteca Allegro
+                "-lallegro_primitives",         // Se usar o addon de primitivas
+                "-lallegro_font",               // Se usar o addon de fontes
+                "-lallegro_ttf",                // Se usar o addon TTF
+                "-o", "game.exe"                // Nome do executável
             ],
             "group": {
                 "kind": "build",

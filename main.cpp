@@ -1,127 +1,276 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
-#include <vector>
-#include <cstdlib>
-#include <ctime>
-#include "player.h"
-#include "enemy.h"
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
+#include <iostream>
+#include "estado_jogo.h"
+#include "menu_inicial.h"
+#include "menu_gameover.h"
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
-#define FPS 60.0
+const float FPS = 60.0;
+enum GameState
+{
+    MENU_INICIAL,
+    JOGANDO,
+    GAME_OVER
+};
 
-int main() {
-    // Inicializa Allegro
-    if (!al_init()) {
-        return -1;
-    }
+ALLEGRO_FONT *fonte = nullptr;
 
-    // Inicializa o módulo de primitivas
-    if (!al_init_primitives_addon()) {
-        return -1;
-    }
-
-    // Cria a janela
-    ALLEGRO_DISPLAY* display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
-    if (!display) {
-        return -1;
-    }
-
-    // Inicializa o temporizador
-    ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
-    if (!timer) {
-        al_destroy_display(display);
-        return -1;
-    }
-
-    // Inicializa o teclado
-    if (!al_install_keyboard()) {
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        return -1;
-    }
-
-    // Inicializa o mouse
-    if (!al_install_mouse()) {
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        return -1;
-    }
-
-    // Cria a fila de eventos
-    ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
-    if (!event_queue) {
-        al_destroy_display(display);
-        al_destroy_timer(timer);
-        return -1;
-    }
-
-    // Registra as fontes de eventos
-    al_register_event_source(event_queue, al_get_display_event_source(display));
-    al_register_event_source(event_queue, al_get_timer_event_source(timer));
-    al_register_event_source(event_queue, al_get_mouse_event_source());
-    al_register_event_source(event_queue, al_get_keyboard_event_source());
-
-    // Inicializa a semente aleatória
+int main()
+{
     srand(time(NULL));
 
-    // Cria o jogador
-    Player player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+    if (!al_init())
+    {
+        std::cerr << "Falha ao inicializar o Allegro!" << std::endl;
+        return -1;
+    }
 
-    // Lista de inimigos
-    std::vector<Enemy> enemies;
+    if (!al_init_primitives_addon())
+    {
+        std::cerr << "Falha ao inicializar primitivas!" << std::endl;
+        return -1;
+    }
 
-    // Inicia o timer
+    if (!al_init_font_addon())
+    {
+        std::cerr << "Falha ao inicializar addon de fontes!" << std::endl;
+        return -1;
+    }
+
+    if (!al_init_ttf_addon())
+    {
+        std::cerr << "Falha ao inicializar addon TTF!" << std::endl;
+        return -1;
+    }
+
+    if (!al_init_acodec_addon())
+    {
+        std::cerr << "Falha ao inicializar addon de áudio!" << std::endl;
+        return -1;
+    }
+
+    if (!al_install_audio())
+    {
+        std::cerr << "Falha ao inicializar audio!" << std::endl;
+        return -1;
+    }
+
+    al_reserve_samples(10);
+
+    if (!al_install_mouse())
+    {
+        std::cerr << "Falha ao inicializar o mouse!" << std::endl;
+        return -1;
+    }
+
+    if (!al_install_keyboard())
+    {
+        std::cerr << "Falha ao inicializar o teclado!" << std::endl;
+        return -1;
+    }
+
+    ALLEGRO_DISPLAY *display = al_create_display(LARGURA_TELA, ALTURA_TELA);
+    if (!display)
+    {
+        std::cerr << "Falha ao criar o display!" << std::endl;
+        return -1;
+    }
+
+    fonte = al_load_font("arial.ttf", 24, 0);  // Voltei para 24
+    if (!fonte)
+    {
+        std::cerr << "Falha ao carregar a fonte!" << std::endl;
+        al_destroy_display(display);
+        return -1;
+    }
+
+    ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
+    ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);
+    ALLEGRO_KEYBOARD_STATE teclas;
+
+    if (!fila_eventos)
+    {
+        std::cerr << "Falha ao criar fila de eventos!" << std::endl;
+        al_destroy_font(fonte);
+        al_destroy_display(display);
+        return -1;
+    }
+
+    if (!timer)
+    {
+        std::cerr << "Falha ao criar timer!" << std::endl;
+        al_destroy_event_queue(fila_eventos);
+        al_destroy_font(fonte);
+        al_destroy_display(display);
+        return -1;
+    }
+
+    al_register_event_source(fila_eventos, al_get_display_event_source(display));
+    al_register_event_source(fila_eventos, al_get_mouse_event_source());
+    al_register_event_source(fila_eventos, al_get_keyboard_event_source());
+    al_register_event_source(fila_eventos, al_get_timer_event_source(timer));
+
+    MenuInicial menu_inicial;
+    EstadoJogo *estado = nullptr;
+    MenuGameOver *menu_gameover = nullptr;
+
+    GameState game_state = MENU_INICIAL;
+    bool executando = true;
+    bool redesenhar = true;
+
+    float mouse_x = 0, mouse_y = 0;
+    bool mouse_botao_esquerdo = false;
+    bool tecla_p_pressionada = false;
+
     al_start_timer(timer);
 
-    bool redraw = true;
-    bool running = true;
-    
-    while (running) {
-        ALLEGRO_EVENT ev;
-        al_wait_for_event(event_queue, &ev);
+    while (executando)
+    {
+        ALLEGRO_EVENT evento;
+        al_wait_for_event(fila_eventos, &evento);
+        al_get_keyboard_state(&teclas);
 
-        if (ev.type == ALLEGRO_EVENT_TIMER) {
-            // Lógica de atualização aqui
-            player.move();
-            for (auto& enemy : enemies) {
-                enemy.move(player.x, player.y);
+        if (evento.type == ALLEGRO_EVENT_TIMER)
+        {
+            if (game_state == JOGANDO && !estado->estaPausado())
+            {
+                estado->atualizar(&teclas, mouse_x, mouse_y);
+
+                if (estado->jogoAcabou() || estado->vitoria())
+                {
+                    game_state = GAME_OVER;
+                    if (estado->vitoria())
+                    {
+                        menu_gameover = new MenuGameOver(VITORIA, estado->getInimigosAbatidos());
+                    }
+                    else if (estado->getBase().estaDestruida())
+                    {
+                        menu_gameover = new MenuGameOver(BASE_DESTRUIDA, estado->getInimigosAbatidos());
+                    }
+                    else
+                    {
+                        menu_gameover = new MenuGameOver(JOGADOR_MORTO, estado->getInimigosAbatidos());
+                    }
+                    mouse_botao_esquerdo = false;
+                }
             }
-            
-            // Spawn de inimigos baseado no timer
-            static float enemy_spawn_timer = 0.0f;
-            enemy_spawn_timer += 1.0f / FPS;
-            if (enemy_spawn_timer > 2.0f) {
-                enemies.push_back(Enemy(rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT));
-                enemy_spawn_timer = 0.0f;
+            redesenhar = true;
+        }
+        else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+        {
+            executando = false;
+        }
+        else if (evento.type == ALLEGRO_EVENT_MOUSE_AXES)
+        {
+            mouse_x = evento.mouse.x;
+            mouse_y = evento.mouse.y;
+        }
+        else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
+        {
+            if (evento.mouse.button & 1)
+            {
+                mouse_botao_esquerdo = true;
+                if (game_state == MENU_INICIAL)
+                {
+                    Dificuldade dif = menu_inicial.verificarSelecao(mouse_x, mouse_y, true);
+                    if (menu_inicial.foiSelecionado())
+                    {
+                        game_state = JOGANDO;
+                        estado = new EstadoJogo(dif);
+                    }
+                }
             }
-            
-            redraw = true;
+            if (evento.mouse.button & 2 && game_state == JOGANDO && !estado->estaPausado())
+            {
+                estado->getJogador().definirDestino(evento.mouse.x, evento.mouse.y);
+            }
         }
-        else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            running = false;
+        else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
+        {
+            if (evento.mouse.button & 1)
+            {
+                mouse_botao_esquerdo = false;
+            }
         }
-        else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-            if (ev.mouse.button == 2) {  // Botão direito do mouse
-                player.move_to(ev.mouse.x, ev.mouse.y);
+        else if (evento.type == ALLEGRO_EVENT_KEY_DOWN)
+        {
+            if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+            {
+                executando = false;
+            }
+            else if (evento.keyboard.keycode == ALLEGRO_KEY_P && game_state == JOGANDO)
+            {
+                if (!tecla_p_pressionada)
+                {
+                    estado->alternarPause();
+                    tecla_p_pressionada = true;
+                }
+            }
+        }
+        else if (evento.type == ALLEGRO_EVENT_KEY_UP)
+        {
+            if (evento.keyboard.keycode == ALLEGRO_KEY_P)
+            {
+                tecla_p_pressionada = false;
             }
         }
 
-        if (redraw && al_is_event_queue_empty(event_queue)) {
-            redraw = false;
-            al_clear_to_color(al_map_rgb(0, 0, 0));
-            player.draw();
-            for (const auto& enemy : enemies) {
-                enemy.draw();
+        if (redesenhar && al_is_event_queue_empty(fila_eventos))
+        {
+            redesenhar = false;
+            al_clear_to_color(al_map_rgb(20, 20, 20));
+
+            switch (game_state)
+            {
+            case MENU_INICIAL:
+                menu_inicial.desenhar(fonte);
+                break;
+
+            case JOGANDO:
+                if (estado)
+                {
+                    estado->desenhar();
+                    if (estado->estaPausado())
+                    {
+                        al_draw_text(fonte, al_map_rgb(255, 255, 255),
+                                     LARGURA_TELA / 2, ALTURA_TELA / 2,
+                                     ALLEGRO_ALIGN_CENTER, "JOGO PAUSADO");
+                    }
+                }
+                break;
+
+            case GAME_OVER:
+                if (menu_gameover)
+                {
+                    menu_gameover->desenhar(fonte);
+                    if (menu_gameover->jogarNovamente(mouse_x, mouse_y, mouse_botao_esquerdo))
+                    {
+                        delete estado;
+                        delete menu_gameover;
+                        estado = nullptr;
+                        menu_gameover = nullptr;
+                        game_state = MENU_INICIAL;
+                        mouse_botao_esquerdo = false;
+                    }
+                }
+                break;
             }
+
             al_flip_display();
         }
     }
 
-    // Limpeza
-    al_destroy_event_queue(event_queue);
+    delete estado;
+    delete menu_gameover;
+
+    al_destroy_font(fonte);
     al_destroy_timer(timer);
+    al_destroy_event_queue(fila_eventos);
     al_destroy_display(display);
-    
+
     return 0;
 }
