@@ -39,12 +39,12 @@ bool EstadoJogo::verificarColisao(float x1, float y1, float r1, float x2, float 
 }
 
 bool EstadoJogo::verificarColisaoBase(float x_inimigo, float y_inimigo) {
-    // Calcula a distância do inimigo ao centro da base
+    
     float dx = x_inimigo - base.x;
     float dy = y_inimigo - base.y;
     float distancia = sqrt(dx * dx + dy * dy);
     
-    // Adiciona um buffer de 15 para considerar o tamanho do inimigo
+   
     return distancia <= (base.raio + 15);
 }
 
@@ -53,19 +53,19 @@ void EstadoJogo::gerarInimigo() {
     int lado = rand() % 4;
     
     switch (lado) {
-        case 0: // Topo
+        case 0: 
             x = rand() % LARGURA_TELA;
             y = -20;
             break;
-        case 1: // Direita
+        case 1: 
             x = LARGURA_TELA + 20;
             y = rand() % ALTURA_TELA;
             break;
-        case 2: // Baixo
+        case 2:
             x = rand() % LARGURA_TELA;
             y = ALTURA_TELA + 20;
             break;
-        case 3: // Esquerda
+        case 3: 
             x = -20;
             y = rand() % ALTURA_TELA;
             break;
@@ -85,7 +85,7 @@ void EstadoJogo::atualizarProjeteis() {
 }
 
 void EstadoJogo::verificarColisoes() {
-    // Verifica colisões dos projéteis do jogador com inimigos
+   
     for (No<Projetil>* proj = projeteis_jogador.começo(); proj != nullptr; proj = proj->proximo) {
         if (!proj->dados.ativo) continue;
         
@@ -100,10 +100,10 @@ void EstadoJogo::verificarColisoes() {
                 
                 if (inim->dados.estaMorto()) {
                     inimigos_abatidos++;
-                    if (rand() % 100 < 30) { // 30% chance de munição
+                    if (rand() % 100 < 30) { 
                         caixas_municao.inserir_inicio(CaixaMunicao(inim->dados.x, inim->dados.y));
                     }
-                    if (rand() % 100 < 10) { // 10% chance de vida
+                    if (rand() % 100 < 10) { 
                         pacotes_vida.inserir_inicio(PacoteVida(inim->dados.x, inim->dados.y));
                     }
                 }
@@ -111,7 +111,7 @@ void EstadoJogo::verificarColisoes() {
         }
     }
     
-    // Verifica colisões dos projéteis inimigos com o jogador e a base
+    
     for (No<Projetil>* proj = projeteis_inimigo.começo(); proj != nullptr; proj = proj->proximo) {
         if (!proj->dados.ativo) continue;
         
@@ -130,7 +130,7 @@ void EstadoJogo::verificarColisoes() {
         }
     }
 
-    // Verifica colisão dos inimigos com a base
+    
     for (No<Inimigo>* inim = inimigos.começo(); inim != nullptr; inim = inim->proximo) {
         if (!inim->dados.ativo) continue;
 
@@ -142,7 +142,7 @@ void EstadoJogo::verificarColisoes() {
         }
     }
     
-    // Verifica colisões com caixas de munição
+    
     for (No<CaixaMunicao>* caixa = caixas_municao.começo(); caixa != nullptr; caixa = caixa->proximo) {
         if (!caixa->dados.ativo) continue;
         
@@ -154,7 +154,7 @@ void EstadoJogo::verificarColisoes() {
         }
     }
 
-    // Verifica colisões com pacotes de vida
+    
     for (No<PacoteVida>* pacote = pacotes_vida.começo(); pacote != nullptr; pacote = pacote->proximo) {
         if (!pacote->dados.ativo) continue;
         
@@ -168,7 +168,7 @@ void EstadoJogo::verificarColisoes() {
 }
 
 void EstadoJogo::removerEntidadesMortas() {
-    // Remove projéteis inativos
+    
     No<Projetil>* proj = projeteis_jogador.começo();
     while (proj != nullptr) {
         No<Projetil>* proximo = proj->proximo;
@@ -187,7 +187,7 @@ void EstadoJogo::removerEntidadesMortas() {
         proj = proximo;
     }
     
-    // Remove inimigos mortos
+    
     No<Inimigo>* inim = inimigos.começo();
     while (inim != nullptr) {
         No<Inimigo>* proximo = inim->proximo;
@@ -197,7 +197,7 @@ void EstadoJogo::removerEntidadesMortas() {
         inim = proximo;
     }
     
-    // Remove caixas de munição expiradas
+   
     No<CaixaMunicao>* caixa = caixas_municao.começo();
     while (caixa != nullptr) {
         No<CaixaMunicao>* proximo = caixa->proximo;
@@ -207,7 +207,7 @@ void EstadoJogo::removerEntidadesMortas() {
         caixa = proximo;
     }
 
-    // Remove pacotes de vida expirados
+   
     No<PacoteVida>* pacote = pacotes_vida.começo();
     while (pacote != nullptr) {
         No<PacoteVida>* proximo = pacote->proximo;
@@ -231,14 +231,14 @@ void EstadoJogo::atualizar(ALLEGRO_KEYBOARD_STATE* teclas, float mouse_x, float 
 
     tempo_jogo += 1.0f / 60.0f;
     
-    // Atualiza spawn de inimigos
+    
     tempo_spawn_inimigo += 1.0f / 60.0f;
     if (tempo_spawn_inimigo >= taxa_spawn) {
         gerarInimigo();
         tempo_spawn_inimigo = 0;
     }
     
-    // Atualiza entidades
+   
     jogador.atualizar(teclas, projeteis_jogador, mouse_x, mouse_y);
     base.atualizar();
     
@@ -284,7 +284,7 @@ void EstadoJogo::desenhar() const {
     
     jogador.desenhar();
 
-    // Informações no canto superior direito
+    
     al_draw_textf(fonte, al_map_rgb(255, 255, 255),
                  LARGURA_TELA - 10, 10, ALLEGRO_ALIGN_RIGHT,
                  "Vida da Base: %d/%d", base.vida, base.vida_maxima);
