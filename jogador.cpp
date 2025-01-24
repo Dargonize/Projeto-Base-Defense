@@ -43,7 +43,7 @@ void Jogador::mover() {
 void Jogador::atirar(float x_alvo, float y_alvo, ListaEncadeada<Projetil>& projeteis) {
     if (municao <= 0 || tempo_recarga > 0) return;
     
-    projeteis.inserir_inicio(Projetil(x, y, x_alvo, y_alvo, true)); // Specify as player projectile
+    projeteis.inserir_inicio(Projetil(x, y, x_alvo, y_alvo, true)); 
     municao--;
     tempo_recarga = recarga_tiro;
     
