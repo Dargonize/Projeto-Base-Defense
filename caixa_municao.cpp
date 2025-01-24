@@ -4,7 +4,7 @@
 
 CaixaMunicao::CaixaMunicao(float pos_x, float pos_y) 
     : x(pos_x), y(pos_y), tempo_vida(5.0f), ativo(true) {
-    quantidade = 5 + (rand() % 6); // 5-10 balas
+    quantidade = 5 + (rand() % 6); 
 }
 
 void CaixaMunicao::atualizar() {
