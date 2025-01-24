@@ -80,7 +80,10 @@ int main()
         return -1;
     }
 
-    fonte = al_load_font("arial.ttf", 24, 0); 
+    // Ativa modo tela cheia
+    al_set_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, true);
+
+    fonte = al_load_font("arial.ttf", 24, 0);
     if (!fonte)
     {
         std::cerr << "Falha ao carregar a fonte!" << std::endl;
